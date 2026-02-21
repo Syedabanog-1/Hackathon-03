@@ -15,10 +15,15 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: learnflow-frontend:latest
+        image: learnflow/frontend:latest
         imagePullPolicy: Never
         ports:
         - containerPort: 3000
+        env:
+        - name: HOSTNAME
+          value: "0.0.0.0"
+        - name: PORT
+          value: "3000"
         envFrom:
         - configMapRef:
             name: frontend-config

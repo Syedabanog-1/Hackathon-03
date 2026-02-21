@@ -9,7 +9,9 @@ spec:
   metadata:
   - name: connectionString
     secretKeyRef:
-      name: learnflow-secrets
-      key: DATABASE_URL
+      name: dapr-postgres-conn
+      key: connectionString
   - name: tableName
     value: "dapr_state"
+  - name: schema
+    value: "public"
