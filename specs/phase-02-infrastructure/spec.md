@@ -20,7 +20,7 @@ All pods must be in Running state.
 
 **Acceptance Scenarios**:
 
-1. **Given** Minikube running with 4 CPUs / 8 GB RAM, **When** agent runs
+1. **Given** Minikube running with 4 CPUs / 6 GB RAM (Docker Desktop limited to 6,144 MB), **When** agent runs
    kafka-k8s-setup skill, **Then** all Kafka pods are Running (KRaft mode — no separate Zookeeper).
 2. **Given** Kafka is running, **When** verify script runs, **Then** output
    is "✓ All 3 pods running" (not full pod JSON).

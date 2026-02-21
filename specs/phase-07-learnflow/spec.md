@@ -56,6 +56,19 @@ Maya takes a quiz on loops, gets 4/5, mastery updates to 68% (Learning level).
 - Code sandbox timeout → return "✗ Execution timeout (5s limit)" to student.
 - Kafka consumer lag > 5s → log warning but don't block student response.
 - Student types "I don't understand" → triggers struggle detection.
+- Kong Ingress backend names MUST match K8s Service names exactly (`triage-service`, `code-sandbox-service`, `progress-service`, `exercise-service`) — mismatch causes 503 on all API routes.
+
+## Clarifications
+
+### Session 2026-02-21
+
+- Q: What is the primary deployment target environment? → A: Minikube local — `imagePullPolicy: Never`; all images built via `eval $(minikube docker-env)` before `docker build`; cloud (Phase 09) is deferred.
+- Q: Have Docker images been built yet? → A: No — all 8 images (7 backend services + frontend) must be built inside Minikube's Docker environment before deployment.
+- Q: Is Minikube running? → A: No (Stopped) — must start with `minikube start --cpus=4 --memory=8192 --driver=docker` before any build or deploy step.
+- Q: Docker Desktop only has 5,927 MB — spec requires 8,192 MB. How to resolve? → A: Increase Docker Desktop memory limit to 6,144 MB (6 GB) in Docker Desktop Settings › Resources › Memory, then start with `minikube start --cpus=4 --memory=6144 --driver=docker`.
+- Q: Kong `routes.yaml` references service names `triage`, `code-sandbox`, `progress`, `exercise` but actual K8s Services are named `triage-service`, `code-sandbox-service`, `progress-service`, `exercise-service` — fix now or rename? → A: Fix `routes.yaml` now — updated all 4 backend names to match K8s Service names (avoids 503s at runtime).
+
+**FR-009**: All Docker images MUST be built inside Minikube's Docker environment (`eval $(minikube docker-env)`) so `imagePullPolicy: Never` resolves correctly on all K8s pods.
 
 ## Requirements
 

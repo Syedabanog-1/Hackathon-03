@@ -14,28 +14,28 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: triage
+            name: triage-service
             port:
               number: 8000
       - path: /api/v1/execute
         pathType: Prefix
         backend:
           service:
-            name: code-sandbox
+            name: code-sandbox-service
             port:
               number: 8000
       - path: /api/v1/progress
         pathType: Prefix
         backend:
           service:
-            name: progress
+            name: progress-service
             port:
               number: 8000
       - path: /api/v1/exercises
         pathType: Prefix
         backend:
           service:
-            name: exercise
+            name: exercise-service
             port:
               number: 8000
 ---
