@@ -5,12 +5,12 @@
 
 ## Phase 1: Full Cluster Bootstrap via Skills
 
-- [ ] T001 Generate AGENTS.md: "Generate AGENTS.md for learnflow-app"
-- [ ] T002 Check cluster: "Check Kubernetes cluster health"
-- [ ] T003 Create namespaces: kafka, postgres, learnflow, kong, monitoring
-- [ ] T004 Deploy Kafka: "Deploy Kafka using kafka-k8s-setup skill"
-- [ ] T005 Deploy PostgreSQL: "Deploy PostgreSQL using postgres-k8s-setup skill"
-- [ ] T006 Verify all infra pods Running before proceeding
+- [X] T001 Generate AGENTS.md: "Generate AGENTS.md for learnflow-app"
+- [X] T002 Check cluster: "Check Kubernetes cluster health"
+- [X] T003 Create namespaces: kafka, postgres, learnflow, kong, monitoring
+- [X] T004 Deploy Kafka: "Deploy Kafka using kafka-k8s-setup skill" (Strimzi learnflow-kafka-combined-0 Running)
+- [X] T005 Deploy PostgreSQL: "Deploy PostgreSQL using postgres-k8s-setup skill" (postgresql-0 Running, 8 tables migrated)
+- [X] T006 Verify all infra pods Running before proceeding
 
 **Checkpoint**: Infrastructure ready ✓
 
@@ -18,19 +18,15 @@
 
 ## Phase 2: Deploy All Services (US1 — Student Tutor Flow)
 
-- [ ] T007 "Create triage service using fastapi-dapr-agent skill"
-- [ ] T008 "Create concepts service using fastapi-dapr-agent skill"
-- [ ] T009 [P] "Create code-review service using fastapi-dapr-agent skill"
-- [ ] T010 [P] "Create debug service using fastapi-dapr-agent skill"
-- [ ] T011 [P] "Create exercise service using fastapi-dapr-agent skill"
-- [ ] T012 "Create progress service using fastapi-dapr-agent skill"
-- [ ] T013 "Create code-sandbox service using fastapi-dapr-agent skill"
-- [ ] T014 Apply Dapr components via k8s-foundation skill: "Apply Dapr
-  components from learnflow-app/infra/dapr-components/" (k8s-foundation
-  scripts/apply_manifests.sh wraps kubectl apply — no raw kubectl in tasks)
-  NOTE: idempotent re-apply — safe if already applied in Phase 03 T019
-- [ ] T015 Deploy Kong: "Deploy Kong API gateway using k8s-foundation skill"
-  (kong_deploy.sh lives in k8s-foundation/scripts/, not mcp-code-execution)
+- [X] T007 "Create triage service using fastapi-dapr-agent skill" (2/2 Running)
+- [X] T008 "Create concepts service using fastapi-dapr-agent skill" (2/2 Running)
+- [X] T009 [P] "Create code-review service using fastapi-dapr-agent skill" (2/2 Running)
+- [X] T010 [P] "Create debug service using fastapi-dapr-agent skill" (2/2 Running)
+- [X] T011 [P] "Create exercise service using fastapi-dapr-agent skill" (2/2 Running)
+- [X] T012 "Create progress service using fastapi-dapr-agent skill" (2/2 Running)
+- [X] T013 "Create code-sandbox service using fastapi-dapr-agent skill" (2/2 Running)
+- [X] T014 Apply Dapr components via k8s-foundation skill (kafka-pubsub + learnflow-state applied)
+- [X] T015 Deploy Kong: "Deploy Kong API gateway using k8s-foundation skill" (2/2 Running, JWT auth active)
 
 **Checkpoint**: All 7 services Running; Kong routing active ✓
 
@@ -38,7 +34,7 @@
 
 ## Phase 3: Frontend + Docs (US1 continued)
 
-- [ ] T016 "Deploy Next.js frontend using nextjs-k8s-deploy skill"
+- [X] T016 "Deploy Next.js frontend using nextjs-k8s-deploy skill" (1/1 Running, homepage served)
 - [ ] T017 "Deploy documentation using docusaurus-deploy skill"
 - [ ] T018 Test /editor page → write Python → run → output shown
 - [ ] T019 Test /dashboard page → mastery scores load from progress service
