@@ -1,0 +1,11 @@
+apiVersion: dapr.io/v1alpha1
+kind: Subscription
+metadata:
+  name: concepts-subscription
+  namespace: learnflow
+spec:
+  pubsubname: pubsub
+  topic: learnflow.concept_explanation
+  route: /explain
+  scopes:
+    - concepts-service

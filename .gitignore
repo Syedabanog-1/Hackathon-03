@@ -1,0 +1,34 @@
+# Environment & Secrets — NEVER commit these
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+.next/
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Docker
+*.tar
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Minikube binary (downloaded artifact, not source)
+minikube-linux-amd64
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Logs
+*.log

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: learnflow
+data:
+  KONG_URL: "http://kong-proxy.kong.svc.cluster.local"
+  NEXT_PUBLIC_KONG_URL: "http://kong-proxy.kong.svc.cluster.local"
+  BETTER_AUTH_URL: "http://learnflow-frontend-svc.learnflow.svc.cluster.local:3000"

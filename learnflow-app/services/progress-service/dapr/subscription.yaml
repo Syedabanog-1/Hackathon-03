@@ -1,0 +1,11 @@
+apiVersion: dapr.io/v1alpha1
+kind: Subscription
+metadata:
+  name: progress-subscription
+  namespace: learnflow
+spec:
+  pubsubname: pubsub
+  topic: learnflow.progress.update
+  route: /progress/event
+  scopes:
+    - progress-service

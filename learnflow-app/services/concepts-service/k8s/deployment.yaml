@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: concepts-service
+  namespace: learnflow
+  labels:
+    app: concepts-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: concepts-service
+  template:
+    metadata:
+      labels:
+        app: concepts-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "concepts-service"
+        dapr.io/app-port: "8001"
+        dapr.io/log-level: "info"
+    spec:
+      containers:
+        - name: concepts-service
+          image: learnflow/concepts-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8001
+          env:
+            - name: PUBSUB_NAME
+              value: kafka-pubsub
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: learnflow-secrets
+                  key: OPENAI_API_KEY
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+              cpu: 500m
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 5
+            periodSeconds: 10

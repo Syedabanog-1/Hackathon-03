@@ -1,0 +1,95 @@
+name: CD — Deploy via Argo CD
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/learnflow
+
+jobs:
+  push-images:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:${{ github.sha }}
+
+      - name: Build and push docs
+        uses: docker/build-push-action@v5
+        with:
+          context: ./docs
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-docs:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-docs:${{ github.sha }}
+
+      - name: Build and push services
+        run: |
+          for svc in triage concepts debug code-review exercise progress code-sandbox; do
+            docker buildx build \
+              --push \
+              --tag "${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${svc}:latest" \
+              --tag "${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${svc}:${{ github.sha }}" \
+              "services/${svc}-service/"
+          done
+
+  update-manifests:
+    name: Update Image Tags for Argo CD
+    runs-on: ubuntu-latest
+    needs: push-images
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update image tags in K8s manifests
+        run: |
+          SHA=${{ github.sha }}
+          REGISTRY="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}"
+
+          # Update frontend
+          sed -i "s|image: learnflow-frontend:.*|image: ${REGISTRY}-frontend:${SHA}|g" \
+            frontend/k8s/deployment.yaml
+
+          # Update docs
+          sed -i "s|image: learnflow-docs:.*|image: ${REGISTRY}-docs:${SHA}|g" \
+            docs/k8s/docs-deployment.yaml
+
+          # Update services
+          for svc in triage concepts debug code-review exercise progress code-sandbox; do
+            if [ -f "services/${svc}-service/k8s/deployment.yaml" ]; then
+              sed -i "s|image: learnflow-${svc}:.*|image: ${REGISTRY}-${svc}:${SHA}|g" \
+                "services/${svc}-service/k8s/deployment.yaml"
+            fi
+          done
+
+      - name: Commit updated manifests
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "ci: update image tags to ${{ github.sha }}"
+          git push

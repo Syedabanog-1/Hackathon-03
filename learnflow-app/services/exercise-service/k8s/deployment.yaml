@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exercise-service
+  namespace: learnflow
+  labels:
+    app: exercise-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exercise-service
+  template:
+    metadata:
+      labels:
+        app: exercise-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "exercise-service"
+        dapr.io/app-port: "8004"
+        dapr.io/log-level: "info"
+    spec:
+      containers:
+        - name: exercise-service
+          image: learnflow/exercise-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8004
+          env:
+            - name: PUBSUB_NAME
+              value: kafka-pubsub
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: learnflow-secrets
+                  key: OPENAI_API_KEY
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 256Mi
+              cpu: 250m
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8004
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8004
+            initialDelaySeconds: 5
+            periodSeconds: 10

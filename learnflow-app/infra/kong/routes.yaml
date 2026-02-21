@@ -1,0 +1,47 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: learnflow-routes
+  namespace: learnflow
+  annotations:
+    kubernetes.io/ingress.class: kong
+    konghq.com/plugins: jwt-auth
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /api/v1/tutor
+        pathType: Prefix
+        backend:
+          service:
+            name: triage
+            port:
+              number: 8000
+      - path: /api/v1/execute
+        pathType: Prefix
+        backend:
+          service:
+            name: code-sandbox
+            port:
+              number: 8000
+      - path: /api/v1/progress
+        pathType: Prefix
+        backend:
+          service:
+            name: progress
+            port:
+              number: 8000
+      - path: /api/v1/exercises
+        pathType: Prefix
+        backend:
+          service:
+            name: exercise
+            port:
+              number: 8000
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: jwt-auth
+  namespace: learnflow
+plugin: jwt

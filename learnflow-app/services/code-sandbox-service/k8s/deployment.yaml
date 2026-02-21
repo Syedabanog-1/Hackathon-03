@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-sandbox-service
+  namespace: learnflow
+  labels:
+    app: code-sandbox-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: code-sandbox-service
+  template:
+    metadata:
+      labels:
+        app: code-sandbox-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "code-sandbox-service"
+        dapr.io/app-port: "8006"
+        dapr.io/log-level: "info"
+    spec:
+      containers:
+        - name: code-sandbox-service
+          image: learnflow/code-sandbox-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8006
+          env:
+            - name: PUBSUB_NAME
+              value: kafka-pubsub
+            - name: SANDBOX_TIMEOUT_SECONDS
+              value: "10"
+            - name: MAX_OUTPUT_BYTES
+              value: "4096"
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 250m
+            limits:
+              memory: 1Gi
+              cpu: 1000m
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8006
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8006
+            initialDelaySeconds: 10
+            periodSeconds: 10

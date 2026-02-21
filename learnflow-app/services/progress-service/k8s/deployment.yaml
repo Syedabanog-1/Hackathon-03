@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: progress-service
+  namespace: learnflow
+  labels:
+    app: progress-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: progress-service
+  template:
+    metadata:
+      labels:
+        app: progress-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "progress-service"
+        dapr.io/app-port: "8005"
+        dapr.io/log-level: "info"
+    spec:
+      containers:
+        - name: progress-service
+          image: learnflow/progress-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8005
+          env:
+            - name: PUBSUB_NAME
+              value: kafka-pubsub
+            - name: STATE_STORE_NAME
+              value: statestore
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: learnflow-secrets
+                  key: DATABASE_URL
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: learnflow-secrets
+                  key: OPENAI_API_KEY
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+              cpu: 500m
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8005
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8005
+            initialDelaySeconds: 5
+            periodSeconds: 10

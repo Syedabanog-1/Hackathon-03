@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: learnflow
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/learnflow/learnflow-app
+    targetRevision: HEAD
+    path: .
+    directory:
+      recurse: true
+      include: "**/{k8s,dapr}/*.yaml"
+      exclude: "infra/argocd/*.yaml"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: learnflow
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
