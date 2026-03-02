@@ -1,13 +1,12 @@
 import { betterAuth } from "better-auth";
-import { Pool, neonConfig } from "@neondatabase/serverless";
-import ws from "ws";
+import { Pool } from "pg";
 
-// WebSocket mode required — HTTP mode (poolQueryViaFetch) does not support transactions
-// Better Auth uses transactions on signup (user + account + session inserts)
-neonConfig.webSocketConstructor = ws;
-
+// pg with Neon pooler URL — supports transactions, no WebSocket needed
+// max:1 prevents connection exhaustion in serverless (each invocation = 1 connection)
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || "postgresql://user:pass@localhost/db",
+  ssl: { rejectUnauthorized: false },
+  max: 1,
 });
 
 export const auth = betterAuth({
