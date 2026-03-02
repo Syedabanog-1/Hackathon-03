@@ -1,9 +1,5 @@
 import { betterAuth } from "better-auth";
-import { Pool, neonConfig } from "@neondatabase/serverless";
-import ws from "ws";
-
-// Required for Node.js serverless environments (Netlify Functions, Vercel)
-neonConfig.webSocketConstructor = ws;
+import { Pool } from "@neondatabase/serverless";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || "postgresql://user:pass@localhost/db",
