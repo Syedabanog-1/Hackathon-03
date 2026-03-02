@@ -1,8 +1,9 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
+import { PostgresDialect } from "kysely";
 
-// pg with Neon pooler URL — supports transactions, no WebSocket needed
-// max:1 prevents connection exhaustion in serverless (each invocation = 1 connection)
+// better-auth v1.5.1 requires Kysely's PostgresDialect — NOT { db: pool, type: "pg" }
+// The old { db: pool, type: "pg" } syntax expected a Kysely instance as db, which caused 500
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || "postgresql://user:pass@localhost/db",
   ssl: { rejectUnauthorized: false },
@@ -10,11 +11,16 @@ const pool = new Pool({
 });
 
 export const auth = betterAuth({
-  database: { db: pool, type: "pg" },
+  database: new PostgresDialect({ pool }),
   emailAndPassword: { enabled: true },
   user: {
     additionalFields: {
-      role: { type: "string", defaultValue: "student", required: false, input: true },
+      role: {
+        type: "string",
+        defaultValue: "student",
+        required: false,
+        input: true,
+      },
     },
   },
   secret: process.env.BETTER_AUTH_SECRET || "learnflow-dev-secret-change-in-prod",
