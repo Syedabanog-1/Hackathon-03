@@ -32,8 +32,14 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Authentication failed");
+      const text = await res.text();
+      let data: { message?: string } = {};
+      try {
+        if (text) data = JSON.parse(text);
+      } catch {
+        // server returned non-JSON (empty body or HTML error page)
+      }
+      if (!res.ok) throw new Error(data.message || `Server error (${res.status}) — check Vercel environment variables`);
       router.push(role === "teacher" ? "/teacher" : "/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
