@@ -13,7 +13,7 @@ export const auth = betterAuth({
   emailAndPassword: { enabled: true },
   user: {
     additionalFields: {
-      role: { type: "string", defaultValue: "student", required: false },
+      role: { type: "string", defaultValue: "student", required: false, input: true },
     },
   },
   secret: process.env.BETTER_AUTH_SECRET || "learnflow-dev-secret-change-in-prod",
