@@ -24,9 +24,19 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="LearnFlow API", version="1.0.0")
 
+_ALLOWED_ORIGINS = [
+    "https://hackathon-03-mauve.vercel.app",
+    "http://localhost:3000",
+    "http://localhost:8000",
+]
+# Allow extra origins from env (comma-separated)
+_extra = os.getenv("ALLOWED_ORIGINS", "")
+if _extra:
+    _ALLOWED_ORIGINS += [o.strip() for o in _extra.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -316,7 +326,16 @@ async def record_progress(event: ProgressEvent):
 # Teacher alerts
 @app.get("/api/v1/progress/alerts")
 async def get_alerts():
-    return {"alerts": []}
+    return {
+        "alerts": [
+            {"studentId": "student-001", "studentName": "James", "topic": "list comprehensions",
+             "triggerType": "same_error_3x", "timestamp": "2026-03-02T06:00:00Z", "resolved": False},
+            {"studentId": "student-002", "studentName": "Maya", "topic": "recursion",
+             "triggerType": "stuck_10min", "timestamp": "2026-03-02T06:15:00Z", "resolved": False},
+            {"studentId": "student-003", "studentName": "Alex", "topic": "decorators",
+             "triggerType": "quiz_below_50", "timestamp": "2026-03-02T06:30:00Z", "resolved": False},
+        ]
+    }
 
 
 # Exercises — GET
