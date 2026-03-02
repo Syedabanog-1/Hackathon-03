@@ -22,10 +22,12 @@ export const auth = betterAuth({
     },
   },
   secret: process.env.BETTER_AUTH_SECRET || "learnflow-dev-secret-change-in-prod",
-  baseURL: process.env.BETTER_AUTH_URL || "https://hackathon-03-mauve.vercel.app",
+  baseURL: process.env.BETTER_AUTH_URL || "https://hackathon-03-sandy.vercel.app",
   trustedOrigins: [
+    "https://hackathon-03-sandy.vercel.app",
     "https://hackathon-03-mauve.vercel.app",
     "http://localhost:3000",
+    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
   ],
 });
 
