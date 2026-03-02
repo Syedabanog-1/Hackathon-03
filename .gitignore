@@ -32,3 +32,5 @@ minikube-linux-amd64
 
 # Logs
 *.log
+
+.vercel
