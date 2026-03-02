@@ -1,14 +1,12 @@
 import { betterAuth } from "better-auth";
-import { Pool, neonConfig } from "@neondatabase/serverless";
-import ws from "ws";
+import { Pool } from "pg";
 
-// Required for @neondatabase/serverless in Node.js / Vercel serverless functions
-neonConfig.webSocketConstructor = ws;
-
-// Use a placeholder during build time — real value must be set in Vercel env vars.
-// The pool only makes an actual connection when a request hits the auth API route.
+// Pool uses placeholder during build; real DATABASE_URL is injected at runtime by Vercel.
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || "postgresql://placeholder:placeholder@placeholder/placeholder",
+  connectionString: process.env.DATABASE_URL || "postgresql://user:pass@localhost/db",
+  ssl: process.env.DATABASE_URL?.includes("neon.tech")
+    ? { rejectUnauthorized: false }
+    : false,
 });
 
 export const auth = betterAuth({
@@ -20,8 +18,9 @@ export const auth = betterAuth({
     },
   },
   secret: process.env.BETTER_AUTH_SECRET || "learnflow-dev-secret-change-in-prod",
-  baseURL: process.env.BETTER_AUTH_URL || "https://hackathon-03-sandy.vercel.app",
+  baseURL: process.env.BETTER_AUTH_URL || "https://learnflow-app.vercel.app",
   trustedOrigins: [
+    "https://learnflow-app.vercel.app",
     "https://hackathon-03-sandy.vercel.app",
     "https://hackathon-03-mauve.vercel.app",
     "http://localhost:3000",
