@@ -1,0 +1,6 @@
+{
+  "framework": "nextjs",
+  "installCommand": "cd learnflow-app/frontend && npm install --legacy-peer-deps",
+  "buildCommand": "cd learnflow-app/frontend && npm run build",
+  "outputDirectory": "learnflow-app/frontend/.next"
+}
