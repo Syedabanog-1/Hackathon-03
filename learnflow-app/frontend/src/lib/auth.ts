@@ -2,16 +2,14 @@ import { betterAuth } from "better-auth";
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import ws from "ws";
 
-// Required for @neondatabase/serverless in Node.js (Vercel serverless functions)
+// Required for @neondatabase/serverless in Node.js / Vercel serverless functions
 neonConfig.webSocketConstructor = ws;
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL is not set. Go to Vercel → Settings → Environment Variables and add DATABASE_URL with your Neon connection string."
-  );
-}
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Use a placeholder during build time — real value must be set in Vercel env vars.
+// The pool only makes an actual connection when a request hits the auth API route.
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || "postgresql://placeholder:placeholder@placeholder/placeholder",
+});
 
 export const auth = betterAuth({
   database: { db: pool, type: "pg" },
