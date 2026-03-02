@@ -21,7 +21,6 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || "https://learnflow-app.vercel.app",
   trustedOrigins: [
     "https://hack03.netlify.app",
-    "https://69a594ca7a80c243de962bff--hack03.netlify.app",
     "https://learnflow-app.vercel.app",
     "https://hackathon-03-sandy.vercel.app",
     "https://hackathon-03-mauve.vercel.app",
