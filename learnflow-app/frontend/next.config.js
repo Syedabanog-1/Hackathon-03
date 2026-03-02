@@ -6,7 +6,7 @@ const nextConfig = {
     KONG_URL: process.env.KONG_URL || process.env.NEXT_PUBLIC_KONG_URL || 'http://localhost:8000',
   },
   experimental: {
-    serverComponentsExternalPackages: ["@neondatabase/serverless"],
+    serverComponentsExternalPackages: ["@neondatabase/serverless", "ws"],
   },
 }
 module.exports = nextConfig

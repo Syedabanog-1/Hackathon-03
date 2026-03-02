@@ -1,8 +1,10 @@
 import { betterAuth } from "better-auth";
 import { Pool, neonConfig } from "@neondatabase/serverless";
+import ws from "ws";
 
-// Force HTTP mode — no WebSocket or ws package needed in Netlify/Vercel serverless
-neonConfig.poolQueryViaFetch = true;
+// WebSocket mode required — HTTP mode (poolQueryViaFetch) does not support transactions
+// Better Auth uses transactions on signup (user + account + session inserts)
+neonConfig.webSocketConstructor = ws;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || "postgresql://user:pass@localhost/db",

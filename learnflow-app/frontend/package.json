@@ -15,7 +15,8 @@
     "@monaco-editor/react": "^4.6.0",
     "better-auth": "^1.0.0",
     "axios": "^1.6.0",
-    "@neondatabase/serverless": "^0.10.4"
+    "@neondatabase/serverless": "^0.10.4",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/node": "^20",
