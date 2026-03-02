@@ -1,12 +1,12 @@
 import { betterAuth } from "better-auth";
-import { Pool } from "pg";
+import { Pool, neonConfig } from "@neondatabase/serverless";
+import ws from "ws";
 
-// Pool uses placeholder during build; real DATABASE_URL is injected at runtime by Vercel.
+// Required for Node.js serverless environments (Netlify Functions, Vercel)
+neonConfig.webSocketConstructor = ws;
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || "postgresql://user:pass@localhost/db",
-  ssl: process.env.DATABASE_URL?.includes("neon.tech")
-    ? { rejectUnauthorized: false }
-    : false,
 });
 
 export const auth = betterAuth({
