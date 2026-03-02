@@ -1,5 +1,8 @@
 import { betterAuth } from "better-auth";
-import { Pool } from "@neondatabase/serverless";
+import { Pool, neonConfig } from "@neondatabase/serverless";
+
+// Force HTTP mode — no WebSocket or ws package needed in Netlify/Vercel serverless
+neonConfig.poolQueryViaFetch = true;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || "postgresql://user:pass@localhost/db",
@@ -14,7 +17,7 @@ export const auth = betterAuth({
     },
   },
   secret: process.env.BETTER_AUTH_SECRET || "learnflow-dev-secret-change-in-prod",
-  baseURL: process.env.BETTER_AUTH_URL || "https://learnflow-app.vercel.app",
+  baseURL: process.env.BETTER_AUTH_URL || "https://hack03.netlify.app",
   trustedOrigins: [
     "https://hack03.netlify.app",
     "https://learnflow-app.vercel.app",
