@@ -40,7 +40,9 @@ export default function LoginPage() {
         // server returned non-JSON (empty body or HTML error page)
       }
       if (!res.ok) throw new Error(data.message || `Server error (${res.status}) — please try again`);
-      router.push(role === "teacher" ? "/teacher" : "/dashboard");
+      // Use role from server response if available, else fall back to form role
+      const serverRole = data?.user?.role || data?.role || role;
+      router.push(serverRole === "teacher" ? "/teacher" : "/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

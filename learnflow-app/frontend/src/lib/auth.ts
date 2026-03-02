@@ -1,9 +1,8 @@
 import { betterAuth } from "better-auth";
+import { nextCookies } from "better-auth/next-js";
 import { Pool } from "pg";
 import { PostgresDialect } from "kysely";
 
-// better-auth v1.5.1 requires Kysely's PostgresDialect — NOT { db: pool, type: "pg" }
-// The old { db: pool, type: "pg" } syntax expected a Kysely instance as db, which caused 500
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || "postgresql://user:pass@localhost/db",
   ssl: { rejectUnauthorized: false },
@@ -13,6 +12,7 @@ const pool = new Pool({
 export const auth = betterAuth({
   database: new PostgresDialect({ pool }),
   emailAndPassword: { enabled: true },
+  plugins: [nextCookies()],   // required — sets cookies properly in Next.js serverless
   user: {
     additionalFields: {
       role: {

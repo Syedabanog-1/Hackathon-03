@@ -6,9 +6,13 @@ const PROTECTED = ["/dashboard", "/editor", "/quiz", "/teacher"];
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isProtected = PROTECTED.some((p) => pathname.startsWith(p));
+
+  // better-auth v1.5.1 sets: better-auth.session_token (dot) or better-auth-session_token (hyphen)
   const sessionToken =
     request.cookies.get("better-auth.session_token") ||
-    request.cookies.get("__session");
+    request.cookies.get("better-auth-session_token") ||
+    request.cookies.get("__Secure-better-auth.session_token") ||
+    request.cookies.get("__Host-better-auth.session_token");
 
   if (isProtected && !sessionToken) {
     const loginUrl = new URL("/login", request.url);
