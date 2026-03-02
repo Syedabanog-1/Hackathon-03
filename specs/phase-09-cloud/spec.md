@@ -43,6 +43,18 @@ Migration script connects to Neon instead of in-cluster pod.
 - **FR-004**: Ingress MUST be configured with TLS (cert-manager or cloud LB).
 - **FR-005**: Cloud cluster MUST have ≥ 4 CPU / 8 GB RAM per node.
 
+## Clarifications
+
+### Session 2026-03-02
+
+- Q: What is the actual cloud deployment platform? → A: Vercel (frontend) + Railway (backend API) — not Kubernetes. Architecture pivot from K8s to PaaS for hackathon delivery speed.
+- Q: What is the Railway backend URL? → A: https://hackathon-03-production.up.railway.app
+- Q: Has setup-db.sql been run in Neon? → A: Yes — migration executed 2026-03-02; all 4 Better Auth tables confirmed present (user, session, account, verification) in neondb.
+- **FR-006**: Frontend MUST set `NEXT_PUBLIC_KONG_URL=https://hackathon-03-production.up.railway.app` on Vercel so all API calls (tutor, execute, progress, exercises) route to Railway.
+- **FR-007**: Railway backend MUST have `ALLOWED_ORIGINS=https://hackathon-03-mauve.vercel.app` env var set so CORS allows the Vercel frontend.
+
+---
+
 ## Success Criteria
 
 - **SC-001**: LearnFlow accessible via public HTTPS URL from cloud cluster.
