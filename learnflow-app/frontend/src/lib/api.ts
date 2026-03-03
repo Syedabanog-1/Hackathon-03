@@ -40,16 +40,21 @@ export async function sendTutorMessage(message: string) {
 }
 
 export async function executeCode(code: string) {
-  const { data } = await api.post("/api/v1/execute", { code });
+  const { data } = await axios.post("/api/execute", { code });
   return data as { output?: string; error?: string; execution_time?: number };
 }
 
-export async function getProgress(studentId = "me") {
-  const { data } = await api.get(`/api/v1/progress/${studentId}`);
+export async function getProgress(_studentId = "me") {
+  const { data } = await axios.get("/api/progress");
   return data as {
-    modules: { name: string; percentage: number; level: string }[];
+    modules: { slug: string; percentage: number; level: string }[];
     streak: number;
   };
+}
+
+export async function saveProgress(moduleSlug: string, scores: { quizScore?: number; exerciseScore?: number; codeScore?: number }) {
+  const { data } = await axios.post("/api/progress", { moduleSlug, ...scores });
+  return data as { success: boolean };
 }
 
 export async function getExercises(topic: string) {
@@ -58,8 +63,13 @@ export async function getExercises(topic: string) {
 }
 
 export async function getStruggleAlerts() {
-  const { data } = await api.get("/api/v1/progress/alerts");
+  const { data } = await axios.get("/api/alerts");
   return data as {
     alerts: { studentId: string; topic: string; triggerType: string; timestamp: string }[];
   };
+}
+
+export async function postStruggleAlert(studentId: string, topic: string, triggerType: string) {
+  const { data } = await axios.post("/api/alerts", { studentId, topic, triggerType });
+  return data as { success: boolean };
 }

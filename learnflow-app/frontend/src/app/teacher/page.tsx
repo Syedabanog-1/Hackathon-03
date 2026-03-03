@@ -31,8 +31,8 @@ export default function TeacherPage() {
 
   useEffect(() => {
     getStruggleAlerts()
-      .then((d) => { if (d.alerts?.length) setAlerts(d.alerts); })
-      .catch(() => {/* use demo data */})
+      .then((d) => { setAlerts(d.alerts?.length ? d.alerts : DEMO_ALERTS); })
+      .catch(() => setAlerts(DEMO_ALERTS))
       .finally(() => setLoading(false));
   }, []);
 

@@ -19,11 +19,10 @@ export default function DashboardPage() {
           .then((d) => {
             if (d.modules?.length) {
               setModules(
-                MODULES.map((mod, i) => ({
-                  name: mod.name,
-                  slug: mod.slug,
-                  percentage: d.modules[i]?.percentage ?? 0,
-                }))
+                MODULES.map((mod) => {
+                  const found = d.modules.find((m) => m.slug === mod.slug);
+                  return { name: mod.name, slug: mod.slug, percentage: found?.percentage ?? 0 };
+                })
               );
             }
             if (d.streak) setStreak(d.streak);

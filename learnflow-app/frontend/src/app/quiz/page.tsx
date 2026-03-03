@@ -1,5 +1,13 @@
 "use client";
 import { useState } from "react";
+import { saveProgress, postStruggleAlert } from "@/lib/api";
+
+const TOPIC_SLUG: Record<string, string> = {
+  "Control Flow": "control-flow",
+  "Data Structures": "data-structures",
+  "Functions": "functions",
+  "Basics": "basics",
+};
 
 const QUESTIONS = [
   { q: "What does `range(5)` produce?", options: ["0 to 4", "1 to 5", "0 to 5", "1 to 4"], answer: 0, topic: "Control Flow" },
@@ -15,6 +23,8 @@ export default function QuizPage() {
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [correctByTopic, setCorrectByTopic] = useState<Record<string, number>>({});
+  const [totalByTopic, setTotalByTopic] = useState<Record<string, number>>({});
 
   const q = QUESTIONS[current];
 
@@ -22,17 +32,37 @@ export default function QuizPage() {
     if (selected !== null) return;
     setSelected(i);
     setShowFeedback(true);
-    if (i === q.answer) setScore((s) => s + 1);
+    const isCorrect = i === q.answer;
+    if (isCorrect) setScore((s) => s + 1);
+    const slug = TOPIC_SLUG[q.topic] ?? q.topic.toLowerCase().replace(/ /g, "-");
+    setCorrectByTopic((prev) => ({ ...prev, [slug]: (prev[slug] ?? 0) + (isCorrect ? 1 : 0) }));
+    setTotalByTopic((prev) => ({ ...prev, [slug]: (prev[slug] ?? 0) + 1 }));
   };
 
   const handleNext = () => {
     setSelected(null);
     setShowFeedback(false);
     if (current + 1 >= QUESTIONS.length) {
-      setDone(true);
+      finishQuiz();
     } else {
       setCurrent((c) => c + 1);
     }
+  };
+
+  const finishQuiz = () => {
+    const quizPct = (score / QUESTIONS.length) * 100;
+    const uniqueSlugs = Object.keys(totalByTopic);
+    uniqueSlugs.forEach((slug) => {
+      const topicPct = ((correctByTopic[slug] ?? 0) / totalByTopic[slug]) * 100;
+      saveProgress(slug, { quizScore: topicPct }).catch(() => {});
+      if (topicPct < 50) {
+        postStruggleAlert("student-current", slug, "quiz_below_50").catch(() => {});
+      }
+    });
+    if (quizPct < 50) {
+      postStruggleAlert("student-current", "general", "quiz_below_50").catch(() => {});
+    }
+    setDone(true);
   };
 
   const masteryGain = Math.round((score / QUESTIONS.length) * 30);
@@ -50,7 +80,7 @@ export default function QuizPage() {
           <div className="text-3xl font-bold text-green-400">+{masteryGain}%</div>
         </div>
         <button
-          onClick={() => { setCurrent(0); setScore(0); setDone(false); setSelected(null); }}
+          onClick={() => { setCurrent(0); setScore(0); setDone(false); setSelected(null); setCorrectByTopic({}); setTotalByTopic({}); }}
           className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium"
         >
           Try Again
