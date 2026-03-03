@@ -1,22 +1,21 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<"student" | "teacher">("student");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccess("");
 
     const endpoint =
       mode === "login" ? "/api/auth/sign-in/email" : "/api/auth/sign-up/email";
@@ -29,11 +28,12 @@ export default function LoginPage() {
     try {
       const res = await fetch(endpoint, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
       const text = await res.text();
-      let data: { message?: string } = {};
+      let data: { message?: string; user?: { role?: string }; role?: string } = {};
       try {
         if (text) data = JSON.parse(text);
       } catch {
@@ -42,10 +42,12 @@ export default function LoginPage() {
       if (!res.ok) throw new Error(data.message || `Server error (${res.status}) — please try again`);
       // Use role from server response if available, else fall back to form role
       const serverRole = data?.user?.role || data?.role || role;
-      router.push(serverRole === "teacher" ? "/teacher" : "/dashboard");
+      const dest = serverRole === "teacher" ? "/teacher" : "/dashboard";
+      setSuccess(mode === "signup" ? "Account created! Redirecting…" : "Signed in! Redirecting…");
+      // Hard navigation so the browser sends the fresh session cookie and middleware allows access
+      window.location.href = dest;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
       setLoading(false);
     }
   };
@@ -64,6 +66,12 @@ export default function LoginPage() {
           {error && (
             <div className="mb-4 px-4 py-2 bg-red-900/40 border border-red-700 rounded text-red-300 text-sm">
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 px-4 py-2 bg-green-900/40 border border-green-700 rounded text-green-300 text-sm">
+              {success}
             </div>
           )}
 
