@@ -6,11 +6,13 @@ import { executeCode } from "@/lib/api";
 interface Props {
   defaultValue?: string;
   onResult?: (output: string) => void;
+  onCodeChange?: (code: string) => void;
 }
 
 export default function CodeEditor({
   defaultValue = "# Write Python here\nprint('Hello, LearnFlow!')\n",
   onResult,
+  onCodeChange,
 }: Props) {
   const [code, setCode] = useState(defaultValue);
   const [output, setOutput] = useState("");
@@ -52,7 +54,7 @@ export default function CodeEditor({
           language="python"
           theme="vs-dark"
           value={code}
-          onChange={(v) => setCode(v ?? "")}
+          onChange={(v) => { const val = v ?? ""; setCode(val); onCodeChange?.(val); }}
           options={{
             minimap: { enabled: false },
             fontSize: 14,

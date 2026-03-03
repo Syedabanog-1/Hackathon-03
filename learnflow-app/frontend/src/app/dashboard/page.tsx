@@ -1,34 +1,36 @@
 "use client";
 import { useEffect, useState } from "react";
-import ProgressBar from "@/components/ProgressBar";
 import Link from "next/link";
+import ProgressBar from "@/components/ProgressBar";
+import { MODULES } from "@/lib/topics";
 
-const DEFAULT_MODULES = [
-  { name: "1. Basics", percentage: 75 },
-  { name: "2. Control Flow", percentage: 60 },
-  { name: "3. Data Structures", percentage: 45 },
-  { name: "4. Functions", percentage: 30 },
-  { name: "5. OOP", percentage: 10 },
-  { name: "6. Files", percentage: 0 },
-  { name: "7. Error Handling", percentage: 0 },
-  { name: "8. Libraries", percentage: 0 },
-];
+const DEFAULT_MODULES = MODULES.map((m) => ({ name: m.name, slug: m.slug, percentage: 0 }));
 
 export default function DashboardPage() {
   const [modules, setModules] = useState(DEFAULT_MODULES);
-  const [streak, setStreak] = useState(3);
+  const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   useEffect(() => {
-    import("@/lib/api").then(({ getProgress }) =>
-      getProgress()
-        .then((d) => {
-          if (d.modules?.length) setModules(d.modules.map((m: {name: string; percentage: number}) => ({ name: m.name, percentage: m.percentage })));
-          if (d.streak) setStreak(d.streak);
-        })
-        .catch(() => {/* use defaults */})
-        .finally(() => setLoading(false))
-    );
+    import("@/lib/api")
+      .then(({ getProgress }) =>
+        getProgress()
+          .then((d) => {
+            if (d.modules?.length) {
+              setModules(
+                MODULES.map((mod, i) => ({
+                  name: mod.name,
+                  slug: mod.slug,
+                  percentage: d.modules[i]?.percentage ?? 0,
+                }))
+              );
+            }
+            if (d.streak) setStreak(d.streak);
+          })
+          .catch(() => {/* use defaults */})
+      )
+      .finally(() => setLoading(false));
   }, []);
 
   const overall = Math.round(modules.reduce((s, m) => s + m.percentage, 0) / modules.length);
@@ -38,7 +40,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold">My Dashboard</h1>
-          <p className="text-gray-500 text-sm mt-1">Track your Python mastery across 8 modules</p>
+          <p className="text-gray-500 text-sm mt-1">Track your Python mastery · click any module to explore topics</p>
         </div>
         <div className="flex gap-3">
           <div className="card text-center px-6">
@@ -57,10 +59,46 @@ export default function DashboardPage() {
         {loading ? (
           <div className="text-gray-500 text-sm animate-pulse">Loading progress…</div>
         ) : (
-          <div className="flex flex-col gap-4">
-            {modules.map((m) => (
-              <ProgressBar key={m.name} module={m.name} percentage={m.percentage} />
-            ))}
+          <div className="flex flex-col gap-2">
+            {modules.map((m) => {
+              const modDef = MODULES.find((md) => md.slug === m.slug)!;
+              const isOpen = expanded === m.slug;
+              return (
+                <div key={m.slug} className="rounded-lg border border-gray-800 overflow-hidden">
+                  {/* Module header — clickable */}
+                  <button
+                    onClick={() => setExpanded(isOpen ? null : m.slug)}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-800/50 transition-colors text-left"
+                  >
+                    <span className="text-gray-400 text-xs w-4">{isOpen ? "▾" : "▸"}</span>
+                    <div className="flex-1">
+                      <ProgressBar module={m.name} percentage={m.percentage} />
+                    </div>
+                  </button>
+
+                  {/* Expanded topics list */}
+                  {isOpen && (
+                    <div className="border-t border-gray-800 bg-gray-900/50 px-4 py-3 flex flex-col gap-2">
+                      <p className="text-xs text-gray-500 mb-1">Topics in this module:</p>
+                      {modDef.topics.map((topic) => (
+                        <div
+                          key={topic.id}
+                          className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-gray-800/60 hover:bg-gray-800 transition-colors"
+                        >
+                          <span className="text-sm text-gray-200">{topic.name}</span>
+                          <Link
+                            href={`/editor?topic=${topic.id}`}
+                            className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs font-medium transition-colors"
+                          >
+                            Start ▶
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

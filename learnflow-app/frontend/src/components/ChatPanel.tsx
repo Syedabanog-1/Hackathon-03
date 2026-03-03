@@ -1,6 +1,5 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { sendTutorMessage } from "@/lib/api";
 
 interface Message {
   role: "user" | "agent";
@@ -8,9 +7,14 @@ interface Message {
   agent?: string;
 }
 
+interface Props {
+  topic?: string;
+  code?: string;
+}
+
 const STRUGGLE_PHRASES = ["i don't understand", "i'm stuck", "i dont understand", "help me", "confused"];
 
-export default function ChatPanel() {
+export default function ChatPanel({ topic, code }: Props) {
   const [messages, setMessages] = useState<Message[]>([
     { role: "agent", text: "Hi! I'm your LearnFlow tutor. Ask me anything about Python!", agent: "Triage" },
   ]);
@@ -36,10 +40,15 @@ export default function ChatPanel() {
 
     setLoading(true);
     try {
-      const result = await sendTutorMessage(text);
+      const res = await fetch("/api/tutor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, topic, code }),
+      });
+      const result = await res.json();
       setMessages((m) => [...m, { role: "agent", text: result.reply, agent: result.agent }]);
     } catch {
-      setMessages((m) => [...m, { role: "agent", text: "Sorry, I'm having trouble connecting to the tutor service. Please try again.", agent: "System" }]);
+      setMessages((m) => [...m, { role: "agent", text: "Sorry, I'm having trouble right now. Please try again.", agent: "System" }]);
     } finally {
       setLoading(false);
     }
