@@ -67,8 +67,10 @@ Maya takes a quiz on loops, gets 4/5, mastery updates to 68% (Learning level).
 - Q: What context should the AI tutor include per message? → A: Always include current topic name + current code in the editor as system context.
 - Q: Where should progress data be stored/fetched on Netlify? → A: Neon PostgreSQL via Next.js API routes (DB already connected via Better Auth).
 - Q: What should the editor pre-load when a topic is started? → A: A starter code template specific to that topic.
+- Q: What language should the AI Tutor respond in? → A: Auto-detect & match — respond in whatever language the student writes in.
 
 **FR-010 (Netlify)**: AI tutor MUST call Anthropic API directly from `/api/tutor` Next.js route; system prompt MUST include current topic name and editor code.
+**FR-013**: AI tutor MUST detect the student's input language and respond in that same language; system prompt MUST explicitly instruct the model to match the student's language for all explanations while keeping code in Python.
 **FR-011 (Netlify)**: Dashboard module cards MUST expand in-place on click to reveal topics list; each topic has a "Start" button that navigates to `/editor?topic=<topicId>` with a pre-loaded starter code template.
 **FR-012 (Netlify)**: Progress data (mastery scores, module completion) MUST be persisted in Neon PostgreSQL and fetched via `/api/progress` Next.js route; Kong gateway NOT required.
 

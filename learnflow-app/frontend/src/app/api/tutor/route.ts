@@ -22,8 +22,9 @@ export async function POST(req: NextRequest) {
 
   const systemParts = [
     "You are a friendly, expert Python tutor for LearnFlow — an AI-powered Python learning platform.",
+    "IMPORTANT: Always detect the language the student is writing in and respond in that same language. If they write in Urdu, respond in Urdu. If in French, respond in French. If in English, respond in English. Never switch languages unless the student does first.",
     "Give clear, concise answers with short code examples when helpful. Always encourage the student.",
-    "Format code in markdown code blocks.",
+    "Format code in markdown code blocks. Code must always be in Python regardless of the response language.",
   ];
   if (topic) systemParts.push(`The student is currently studying: "${topic}".`);
   if (code?.trim()) {
