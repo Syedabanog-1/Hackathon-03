@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,9 +37,9 @@ export default function LoginPage() {
       let data: { message?: string; user?: { role?: string }; role?: string } = {};
       try { if (text) data = JSON.parse(text); } catch { /* non-JSON */ }
       if (!res.ok) throw new Error(data.message || `Error ${res.status} — please try again`);
-      const serverRole = data?.user?.role || data?.role || role;
-      setSuccess(mode === "signup" ? "Account created! Redirecting…" : "Signed in! Redirecting…");
-      window.location.href = serverRole === "teacher" ? "/teacher" : "/dashboard";
+      setSuccess(mode === "signup" ? "Account created! Taking you home…" : "Signed in! Taking you home…");
+      setRedirecting(true);
+      setTimeout(() => { window.location.href = "/"; }, 800);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);
@@ -76,8 +77,19 @@ export default function LoginPage() {
           ))}
         </div>
 
+        {/* Redirect success screen */}
+        {redirecting && (
+          <div className="bg-gray-900 border border-green-800 rounded-2xl p-8 text-center">
+            <div className="text-4xl mb-4">✅</div>
+            <p className="text-green-400 font-semibold text-lg">
+              {mode === "signup" ? "Account created!" : "Signed in!"}
+            </p>
+            <p className="text-gray-500 text-sm mt-1">Taking you home…</p>
+          </div>
+        )}
+
         {/* Card */}
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        {!redirecting && <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
 
           {error && (
             <div className="mb-4 px-3 py-2.5 bg-red-900/40 border border-red-700 rounded-lg text-red-300 text-sm flex items-center gap-2">
@@ -146,11 +158,13 @@ export default function LoginPage() {
               {loading ? "Please wait…" : mode === "login" ? "Sign In →" : "Create Account →"}
             </button>
           </form>
-        </div>
+        </div>}
 
-        <p className="mt-4 text-center text-xs text-gray-600">
-          By continuing you agree to our Terms &amp; Privacy Policy
-        </p>
+        {!redirecting && (
+          <p className="mt-4 text-center text-xs text-gray-600">
+            By continuing you agree to our Terms &amp; Privacy Policy
+          </p>
+        )}
       </div>
     </div>
   );

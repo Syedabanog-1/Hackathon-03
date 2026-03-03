@@ -18,19 +18,13 @@ export default function Home() {
           Chat with AI agents · Write &amp; run code in the browser · Track mastery across 8 modules · Get personalised exercises
         </p>
 
-        {/* CTAs */}
+        {/* CTA — single entry point */}
         <div className="flex gap-3 justify-center flex-wrap mb-16">
           <Link
             href="/login"
-            className="px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-semibold transition-colors shadow-lg shadow-blue-900/40 text-white"
+            className="px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-semibold transition-colors text-white"
           >
             Get Started →
-          </Link>
-          <Link
-            href="/login"
-            className="px-8 py-3 border border-gray-700 hover:border-blue-500 hover:text-blue-400 rounded-lg font-semibold transition-colors text-gray-300"
-          >
-            Sign In
           </Link>
         </div>
 
