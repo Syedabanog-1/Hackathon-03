@@ -1,2 +1,5 @@
 .vercel
 *.tsbuildinfo
+# Local env files — NEVER commit these
+.env.local
+.env.*.local
