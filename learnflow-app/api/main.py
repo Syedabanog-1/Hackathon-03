@@ -25,20 +25,43 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="LearnFlow API", version="1.0.0")
 
 _ALLOWED_ORIGINS = [
+    # ── Netlify ───────────────────────────────────────────────────────────────
     "https://hack03.netlify.app",
+
+    # ── Vercel (all known deployment slugs) ───────────────────────────────────
     "https://hackathon-03-sandy.vercel.app",
     "https://hackathon-03-mauve.vercel.app",
+    "https://hackathon-03-git-main-syedabanog-1.vercel.app",
+    "https://hackathon-03.vercel.app",
+    "https://learnflow-app.vercel.app",
+    "https://learnflow-app-two.vercel.app",
+
+    # ── Railway (this service itself — needed for health-check redirects) ─────
+    "https://hackathon-03-production.up.railway.app",
+
+    # ── Local development ─────────────────────────────────────────────────────
     "http://localhost:3000",
     "http://localhost:8000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000",
 ]
-# Allow extra origins from env (comma-separated)
+
+# ALLOWED_ORIGINS env var (comma-separated) — add new URLs without code changes
 _extra = os.getenv("ALLOWED_ORIGINS", "")
 if _extra:
     _ALLOWED_ORIGINS += [o.strip() for o in _extra.split(",") if o.strip()]
 
+# De-duplicate while preserving order
+seen: set = set()
+_UNIQUE_ORIGINS: list = []
+for _o in _ALLOWED_ORIGINS:
+    if _o not in seen:
+        seen.add(_o)
+        _UNIQUE_ORIGINS.append(_o)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_ALLOWED_ORIGINS,
+    allow_origins=_UNIQUE_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

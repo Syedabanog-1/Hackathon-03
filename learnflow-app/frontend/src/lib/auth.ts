@@ -4,88 +4,104 @@ import { Pool } from "pg";
 import { PostgresDialect } from "kysely";
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || "postgresql://user:pass@localhost/db",
+  connectionString:
+    process.env.DATABASE_URL ||
+    "postgresql://user:pass@localhost/db",
   ssl: { rejectUnauthorized: false },
   max: 1,
 });
 
 // ---------------------------------------------------------------------------
-// Resolve the canonical base URL for Better Auth.
+// resolveBaseURL
 //
-// Priority (highest → lowest):
-//   1. BETTER_AUTH_URL  — explicitly set in Netlify / Vercel env vars
-//   2. NEXT_PUBLIC_APP_URL — next.js public env (set in deployment dashboard)
-//   3. VERCEL_URL       — auto-injected by Vercel for every deployment/preview
-//   4. localhost:3000   — local development fallback
+// Better Auth REQUIRES that `baseURL` exactly matches the origin of every
+// incoming auth request. A mismatch is the *only* cause of "invalid origin".
 //
-// Trailing slashes are stripped so Better Auth comparisons are consistent.
+// Priority chain (first non-empty value wins):
+//   1. BETTER_AUTH_URL        — set this in Netlify / Vercel env dashboard
+//   2. NEXT_PUBLIC_APP_URL    — public Next.js env, also set in dashboard
+//   3. VERCEL_URL             — auto-injected by Vercel (server-side only)
+//   4. http://localhost:3000  — local dev fallback
+//
+// Trailing slashes are always stripped for consistent comparison.
 // ---------------------------------------------------------------------------
 function resolveBaseURL(): string {
-  const candidates = [
-    process.env.BETTER_AUTH_URL,
-    process.env.NEXT_PUBLIC_APP_URL,
-    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
-  ];
-
-  for (const c of candidates) {
-    if (c && c.trim() && !c.includes("localhost:3000") === false) {
-      return c.replace(/\/$/, "");
-    }
-    if (c && c.trim()) return c.replace(/\/$/, "");
+  // Explicit env vars take top priority
+  if (process.env.BETTER_AUTH_URL?.trim()) {
+    return process.env.BETTER_AUTH_URL.trim().replace(/\/$/, "");
   }
+
+  if (process.env.NEXT_PUBLIC_APP_URL?.trim()) {
+    return process.env.NEXT_PUBLIC_APP_URL.trim().replace(/\/$/, "");
+  }
+
+  // VERCEL_URL is auto-set by Vercel for every deployment (incl. previews).
+  // It does NOT include the https:// prefix — we add it here.
+  if (process.env.VERCEL_URL?.trim()) {
+    return `https://${process.env.VERCEL_URL.trim()}`;
+  }
+
   return "http://localhost:3000";
 }
 
 const baseURL = resolveBaseURL();
 
 // ---------------------------------------------------------------------------
-// Build the full list of trusted origins.
-// This list is checked against the incoming request's Origin header.
-// A mismatch is the sole cause of the "invalid origin" error.
+// buildTrustedOrigins
+//
+// Every URL that could send auth requests must be listed here.
+// Better Auth checks the incoming `Origin` header against this list.
 // ---------------------------------------------------------------------------
 function buildTrustedOrigins(): string[] {
   const origins = new Set<string>([
-    // ── Netlify deployments ─────────────────────────────────────────────────
+    // ── Netlify ──────────────────────────────────────────────────────────────
     "https://hack03.netlify.app",
 
-    // ── Vercel deployments (add yours here if the project name changes) ─────
+    // ── Vercel (all known deployment slugs) ──────────────────────────────────
     "https://learnflow-app.vercel.app",
     "https://learnflow-app-two.vercel.app",
     "https://hackathon-03-sandy.vercel.app",
     "https://hackathon-03-mauve.vercel.app",
     "https://hackathon-03-git-main-syedabanog-1.vercel.app",
+    // Vercel auto-generates preview URLs — cover the common pattern:
+    "https://hackathon-03.vercel.app",
 
-    // ── Local development ───────────────────────────────────────────────────
+    // ── Local dev ────────────────────────────────────────────────────────────
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 
-    // ── Always trust whatever baseURL resolves to ───────────────────────────
+    // ── Always include whatever baseURL resolves to ───────────────────────────
     baseURL,
   ]);
 
-  // BETTER_AUTH_URL from env (strip trailing slash for consistency)
-  if (process.env.BETTER_AUTH_URL) {
-    origins.add(process.env.BETTER_AUTH_URL.replace(/\/$/, ""));
+  // Env-var driven origins — these let you add a new deployment URL
+  // without touching code. Set them in your deployment dashboard.
+
+  if (process.env.BETTER_AUTH_URL?.trim()) {
+    origins.add(process.env.BETTER_AUTH_URL.trim().replace(/\/$/, ""));
   }
 
-  // NEXT_PUBLIC_APP_URL from env
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    origins.add(process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, ""));
+  if (process.env.NEXT_PUBLIC_APP_URL?.trim()) {
+    origins.add(process.env.NEXT_PUBLIC_APP_URL.trim().replace(/\/$/, ""));
   }
 
-  // VERCEL_URL is the auto-injected preview URL (no protocol prefix)
-  if (process.env.VERCEL_URL) {
-    origins.add(`https://${process.env.VERCEL_URL}`);
+  // VERCEL_URL — auto-injected per-deployment (no protocol)
+  if (process.env.VERCEL_URL?.trim()) {
+    origins.add(`https://${process.env.VERCEL_URL.trim()}`);
   }
 
-  // VERCEL_BRANCH_URL covers branch-specific preview deployments
-  if (process.env.VERCEL_BRANCH_URL) {
-    origins.add(`https://${process.env.VERCEL_BRANCH_URL}`);
+  // VERCEL_BRANCH_URL — branch-specific preview URL
+  if (process.env.VERCEL_BRANCH_URL?.trim()) {
+    origins.add(`https://${process.env.VERCEL_BRANCH_URL.trim()}`);
   }
 
-  // Comma-separated extra origins — set ALLOWED_ORIGINS in your dashboard
-  // to cover any deployment URL not listed above without a code change.
-  if (process.env.ALLOWED_ORIGINS) {
+  // VERCEL_PROJECT_PRODUCTION_URL — stable production URL on Vercel
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim()) {
+    origins.add(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.trim()}`);
+  }
+
+  // ALLOWED_ORIGINS — comma-separated escape hatch for any other URL
+  if (process.env.ALLOWED_ORIGINS?.trim()) {
     process.env.ALLOWED_ORIGINS.split(",")
       .map((o) => o.trim())
       .filter(Boolean)
@@ -98,7 +114,7 @@ function buildTrustedOrigins(): string[] {
 export const auth = betterAuth({
   database: new PostgresDialect({ pool }),
   emailAndPassword: { enabled: true },
-  plugins: [nextCookies()], // required — sets cookies properly in Next.js serverless
+  plugins: [nextCookies()], // sets cookies correctly in Next.js serverless / edge
   user: {
     additionalFields: {
       role: {
@@ -109,7 +125,9 @@ export const auth = betterAuth({
       },
     },
   },
-  secret: process.env.BETTER_AUTH_SECRET || "learnflow-dev-secret-change-in-prod",
+  secret:
+    process.env.BETTER_AUTH_SECRET ||
+    "learnflow-dev-secret-change-in-prod",
   baseURL,
   trustedOrigins: buildTrustedOrigins(),
 });
