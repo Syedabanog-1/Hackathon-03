@@ -27,20 +27,20 @@ export default function EditorLayout({ topic }: Props) {
 
   return (
     <div className="flex flex-col h-[calc(100vh-56px)]">
-      <div className="border-b border-gray-800 px-6 py-2 flex items-center gap-3">
+      <div className="border-b border-gray-800 px-4 sm:px-6 py-2 flex flex-wrap items-center gap-2 sm:gap-3">
         <span className="font-semibold text-sm">Python Editor</span>
         {topicInfo && (
           <span className="px-2 py-0.5 bg-blue-900/40 border border-blue-700 rounded text-blue-300 text-xs">
             {topicInfo.moduleName} › {topicInfo.name}
           </span>
         )}
-        <span className="text-gray-600 text-xs ml-auto">5s timeout · 50MB · stdlib only</span>
+        <span className="text-gray-600 text-xs sm:ml-auto">5s timeout · 50MB · stdlib only</span>
       </div>
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 p-4 overflow-y-auto">
+      <div className="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden">
+        <div className="flex-1 p-4 min-h-[50vh] md:min-h-0 overflow-y-auto">
           <CodeEditor defaultValue={code} onCodeChange={setCode} />
         </div>
-        <div className="w-80 border-l border-gray-800 p-4">
+        <div className="w-full md:w-80 min-h-[60vh] md:min-h-0 border-t md:border-t-0 md:border-l border-gray-800 p-4">
           <ChatPanel topic={topicInfo?.name} code={code} />
         </div>
       </div>

@@ -24,14 +24,22 @@ export const auth = betterAuth({
     },
   },
   secret: process.env.BETTER_AUTH_SECRET || "learnflow-dev-secret-change-in-prod",
-  baseURL: process.env.BETTER_AUTH_URL || "https://hack03.netlify.app",
+  // baseURL must match the domain the app is actually served from — a mismatch
+  // between this and the real request origin is what produces "invalid origin".
+  baseURL:
+    process.env.BETTER_AUTH_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
   trustedOrigins: [
     "https://hack03.netlify.app",
     "https://learnflow-app.vercel.app",
+    "https://learnflow-app-two.vercel.app",
     "https://hackathon-03-sandy.vercel.app",
     "https://hackathon-03-mauve.vercel.app",
     "http://localhost:3000",
-    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
+    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL.replace(/\/$/, "")] : []),
+    ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+    // Allow any extra origins via env, comma-separated (mirrors the FastAPI backend's ALLOWED_ORIGINS pattern)
+    ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean) : []),
   ],
 });
 

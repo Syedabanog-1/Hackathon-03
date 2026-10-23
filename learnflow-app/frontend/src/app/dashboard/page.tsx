@@ -35,18 +35,18 @@ export default function DashboardPage() {
   const overall = Math.round(modules.reduce((s, m) => s + m.percentage, 0) / modules.length);
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold">My Dashboard</h1>
           <p className="text-gray-500 text-sm mt-1">Track your Python mastery · click any module to explore topics</p>
         </div>
         <div className="flex gap-3">
-          <div className="card text-center px-6">
+          <div className="card text-center px-4 sm:px-6 flex-1 sm:flex-none">
             <div className="text-2xl font-bold text-blue-400">{overall}%</div>
             <div className="text-xs text-gray-500">Overall</div>
           </div>
-          <div className="card text-center px-6">
+          <div className="card text-center px-4 sm:px-6 flex-1 sm:flex-none">
             <div className="text-2xl font-bold text-orange-400">🔥 {streak}</div>
             <div className="text-xs text-gray-500">Day streak</div>
           </div>
@@ -102,7 +102,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Link href="/editor" className="card hover:border-blue-600 transition-colors cursor-pointer">
           <div className="text-xl mb-1">⚡</div>
           <div className="font-semibold">Code Editor</div>
