@@ -65,6 +65,7 @@ function buildTrustedOrigins(): string[] {
     "https://hackathon-03-git-main-syedabanog-1.vercel.app",
     // Vercel auto-generates preview URLs — cover the common pattern:
     "https://hackathon-03.vercel.app",
+    "https://hackathon-03-ten.vercel.app",
 
     // ── Local dev ────────────────────────────────────────────────────────────
     "http://localhost:3000",
