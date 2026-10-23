@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: learnflow-api
+    runtime: python
+    rootDir: learnflow-app/api
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: "https://hackathon-03-ten.vercel.app,https://hack03.netlify.app,https://hackathon-03-sandy.vercel.app"
+      - key: SANDBOX_TIMEOUT_SECONDS
+        value: "10"
